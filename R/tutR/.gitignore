@@ -1,0 +1,5 @@
+.Rhistory
+.RData
+.Rproj.user/
+vignettes/*.html
+vignettes/*.pdf
