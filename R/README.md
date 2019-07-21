@@ -26,8 +26,10 @@ $ docker run -d --rm --name tutr -p 8080:8080 tutr
 
 Then, just browse to `http://localhost:8080`.  An instance of RStudio Server will be running at `http://localhost:8080/rstudio` with the username `guest` and password `guest`.
 
-![](../doc/img/learnr02.png)
+![](../doc/img/tutr01.png)
 
-![](../doc/img/learnr03.png)
+![](../doc/img/tutr02.png)
 
-![](../doc/img/learnr04.png)
+![](../doc/img/tutr03.png)
+
+![](../doc/img/tutr04.png)
