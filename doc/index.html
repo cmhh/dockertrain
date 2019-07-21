@@ -27,14 +27,6 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<!--
-					ideas: 
-					anything hard to otherwise configure - GDAL? definitely hadoop + spark etc.
-					mention graphical apps via x11
-					web interfaces
-					btw... data engineers etc. can use docker to practice configuring real-world environments.  configuring a collection of docker images to function as a big data environment isn't all that different to doing the same thing with real servers.  actually, plenty of real-world production environments are built with containers.
-					sometimes to learn it's good enough to have the ability to just try stuff.  docker provides that too in a way that is guaranteed to be non-destructive (to the host)
-				-->
 				<section data-background="img/whale-transparent-docker.png" class="title shadow-black">
 					<h3>Building Training Environments with Docker</h3>
 					<p>
@@ -49,10 +41,6 @@
 					
 					<section>
 						<img src="img/docker-works-on-my-machine.jpg" style="height: 90%">
-					</section>
-
-					<section>
-						<img src="img/wonka.jpg">
 					</section>
 
 					<section>
@@ -641,7 +629,7 @@ $ docker run -d --rm --name bigdata -p 8888:8888 bigdata
 						<p><a href="https://github.com/cmhh/dockertrain">build training environments with Docker</a></p>
 						<p>To pull the whole repository, then build and run the R training prototype:</p>
 						<pre><code class="bash" data-trim contenteditable>
-$ git clone dockertrain
+$ git clone dockertrain && cd dockertrain
 $ docker build -t tutr R # this will take a while!
 $ docker run -d --rm --name tutr -p 8080:8080 tutr
 						</code></pre>
