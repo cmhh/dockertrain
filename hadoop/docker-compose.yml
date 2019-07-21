@@ -1,0 +1,111 @@
+version: "3"
+
+services:
+  namenode:
+    image: hadoop-namenode
+    hostname: namenode
+    container_name: namenode
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop.env
+  datanode1:
+    image: hadoop-datanode
+    hostname: datanode1
+    container_name: datanode1
+    volumes:
+      - hadoop_datanode1:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:8020"
+    env_file:
+      - ./hadoop.env
+  datanode2:
+    image: hadoop-datanode
+    hostname: datanode2
+    container_name: datanode2
+    volumes:
+      - hadoop_datanode2:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:8020"
+    env_file:
+      - ./hadoop.env
+  datanode3:
+    image: hadoop-datanode
+    hostname: datanode3
+    container_name: datanode3
+    volumes:
+      - hadoop_datanode3:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:8020"
+    env_file:
+      - ./hadoop.env
+  resourcemanager:
+    image: hadoop-resourcemanager
+    container_name: resourcemanager
+    environment:
+      SERVICE_PRECONDITION: "namenode:8020 datanode1:50010 datanode2:50010 datanode3:50010"
+    env_file:
+      - ./hadoop.env
+  nodemanager:
+    image: hadoop-nodemanager
+    container_name: nodemanager
+    environment:
+      SERVICE_PRECONDITION: "namenode:8020 datanode1:50010 datanode2:50010 datanode3:50010 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+  historyserver:
+    image: hadoop-historyserver
+    container_name: historyserver
+    environment:
+      SERVICE_PRECONDITION: "namenode:8020 datanode1:50010 datanode2:50010 datanode3:50010 resourcemanager:8088"
+    volumes:
+      - hadoop_historyserver:/hadoop/yarn/timeline
+    env_file:
+      - ./hadoop.env
+  sparkmaster:
+    image: hadoop-sparkmaster
+    container_name: sparkmaster
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    env_file:
+      - ./hadoop.env
+    command: tail -f /dev/null
+  sparkworker1:
+    image: hadoop-sparkworker
+    depends_on:
+      - sparkmaster
+    container_name: sparkworker1
+    environment:
+      - "SPARK_MASTER=spark://sparkmaster:7077"
+    env_file:
+      - ./hadoop.env
+    command: tail -f /dev/null
+  sparkworker2:
+    image: hadoop-sparkworker
+    depends_on:
+      - sparkmaster
+    container_name: sparkworker2
+    environment:
+      - "SPARK_MASTER=spark://sparkmaster:7077"
+    env_file:
+      - ./hadoop.env
+    command: tail -f /dev/null
+  sparkworker3:
+    image: hadoop-sparkworker
+    depends_on:
+      - sparkmaster
+    container_name: sparkworker3
+    environment:
+      - "SPARK_MASTER=spark://sparkmaster:7077"
+    env_file:
+      - ./hadoop.env
+    command: tail -f /dev/null
+volumes:
+  hadoop_namenode:
+  hadoop_datanode1:
+  hadoop_datanode2:
+  hadoop_datanode3:
+  hadoop_historyserver:
