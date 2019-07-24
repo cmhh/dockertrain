@@ -1,26 +1,28 @@
 FROM ubuntu:18.04
 
 ENV DEBIAN_FRONTEND noninteractive
-
 ENV R_BASE_VERSION 3.4.4
 ENV SBT_VERSION 1.2.8
 ENV HADOOP_VERSION 3.2.0
 ENV HIVE_VERSION 2.3.5
 ENV SPARK_VERSION 2.4.3
 ENV PATH $PATH:~/.local/bin
-
+ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 ENV SHELL /bin/bash
 
 # install necessary packages
 RUN apt-get update && \
   apt-get install -y \
-    libssl-dev libgit2-dev libssl-dev libcurl4-gnutls-dev libxml2-dev \
-    openjdk-8-jdk \
-    python3-pip \
-    git \
+    libssl-dev libgit2-dev libssl-dev libcurl4-gnutls-dev libxml2-dev curl\
+    openssh-server openssh-client \
+    openjdk-8-jdk python3-pip git vim postgresql libpostgresql-jdbc-java \
     r-base=${R_BASE_VERSION}* r-base-dev=${R_BASE_VERSION}* && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /root/.ssh && \
+  ssh-keygen -t rsa -f /root/.ssh/id_rsa -P '' && \
+  cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
 
 # install sbt
 RUN curl -Lo /tmp/sbt.tgz https://piccolo.link/sbt-${SBT_VERSION}.tgz && \
@@ -48,6 +50,11 @@ RUN mkdir -p $HADOOP_HOME && \
 ENV HIVE_HOME=/opt/hive
 ENV HIVE_CONF_DIR=$HIVE_HOME/conf
 ENV PATH $PATH:$HIVE_HOME/bin
+ENV HDFS_NAMENODE_USER root
+ENV HDFS_DATANODE_USER root
+ENV HDFS_SECONDARYNAMENODE_USER root
+ENV YARN_NODEMANAGER_USER root
+ENV YARN_RESOURCEMANAGER_USER root
 RUN mkdir -p $HIVE_HOME && \
   curl -sL \
     "https://archive.apache.org/dist/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz" | \
@@ -58,7 +65,8 @@ RUN mkdir -p $HIVE_HOME && \
   mkdir -p /data/hive/ && \
   mkdir -p $HIVE_CONF_DIR && \
   chmod 777 $HIVE_HOME/hcatalog/var/log && \
-  chmod 777 $HIVE_HOME/var/log 
+  chmod 777 $HIVE_HOME/var/log && \
+  mkdir ${HOME}/namenode && mkdir ${HOME}/datanode
 
 # install spark
 ENV SPARK_HOME=/opt/spark
@@ -152,18 +160,19 @@ RUN cd $HIVE_HOME/lib && \
   ln -s $SPARK_HOME/jars/spark-unsafe* && \
   ln -s $SPARK_HOME/jars/xbean-asm5-shaded* 
 
+ADD files/core-site.xml $HADOOP_CONF_DIR/
+ADD files/hadoop-env.sh $HADOOP_CONF_DIR/
+ADD files/hdfs-site.xml $HADOOP_CONF_DIR/
 ADD files/hive-site.xml $HIVE_CONF_DIR/
 ADD files/hive-site.xml $SPARK_CONF_DIR/
+ADD files/pg_hba.conf /etc/postgresql/10/main/
 
 ADD files/init.sh /
-
 ADD data /data
 
 COPY notebooks/scala notebooks/scala
 COPY notebooks/python notebooks/python
 COPY notebooks/R notebooks/R
-
-ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 
 EXPOSE 22 
 EXPOSE 4040

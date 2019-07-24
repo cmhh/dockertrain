@@ -22,11 +22,11 @@
   </property>
   <property>
     <name>hive.enable.spark.execution.engine</name>
-    <value>true</value>
+    <value>false</value>
   </property>
   <property>
     <name>hive.execution.engine</name>
-    <value>spark</value>
+    <value>mr</value>
   </property>
   <property>
     <name>hive.exec.stagingdir</name>
