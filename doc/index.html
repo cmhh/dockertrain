@@ -116,6 +116,29 @@ docker run -it --name rdemo --rm rdemo R
 					<section>
 						<img src=img/rdemo.png>
 					</section>
+
+					<section>
+						<h3>Containers for Everything</h3>
+						<p>Docker containers are becoming an increasingly standard 'installation' option for many software providers.  In some cases it is their preferred method since they then only need to maintain a single option.</p>
+
+						<p>But because of this, there are many, many official images online which we can use directly, or else as the starting point for our own creations.</p>
+					</section>
+
+					<section>
+						<p>A particularly good example, and one that's similar to the sorts of things we'll discuss here, is:</p>
+						<a href=https://jupyter-docker-stacks.readthedocs.io/en/latest/>jupyter/datascience-notebook</a>
+						<pre><code class="bash" data-trim contenteditable>
+$ docker pull jupyter/datascience-notebook
+$ docker run --rm -p 8889:8888 \
+  -e JUPYTER_ENABLE_LAB=yes \
+  -v "${HOME}/tmp":/home/jovyan/work \
+  jupyter/datascience-notebook
+						</code></pre>
+					</section>
+
+					<section>
+						<img src=img/dsnb.png>
+					</section>
 				</section>
 
 				<section>
@@ -649,6 +672,18 @@ $ docker run -d --rm --name tutr -p 8080:8080 tutr
 						<p>It is possible to create a private registry, and there are any number of guides online.  For example:</p>
 						<p><a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-a-private-docker-registry-on-ubuntu-18-04">How To Set Up a Private Docker Registry on Ubuntu 18.04</a></p>
 						<p>Learning environments like the ones discussed here can be placed in a private registry, so users can pull images without the need to build them themselves.</p>
+					</section>
+				</section>
+				<section>
+					<section data-background="#F1C40F" class=title>
+						<h2>Other Rescources</h2>
+					</section>
+
+					<section>
+						<p>There are many, many online tutorials, books, etc. about Docker.  The <a href=https://docs.docker.com/>official docs</a> are excellent.</p>
+						<p>For analysts and data scientists, the following is a worthwhile read:</p>
+						<img src=img/d4ds.jpg>
+						<p  style="text-align: center; font-size: 50%;"><a href=https://www.apress.com/gp/book/9781484230114>Docker for Data Science (2017)</a></p>
 					</section>
 				</section>
 			</div>
