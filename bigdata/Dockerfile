@@ -170,9 +170,7 @@ ADD files/pg_hba.conf /etc/postgresql/10/main/
 ADD files/init.sh /
 ADD data /data
 
-COPY notebooks/scala notebooks/scala
-COPY notebooks/python notebooks/python
-COPY notebooks/R notebooks/R
+COPY notebooks notebooks
 
 EXPOSE 22 
 EXPOSE 4040
