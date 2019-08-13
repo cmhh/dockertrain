@@ -96,7 +96,7 @@ ENV PYSPARK_DRIVER_PYTHON="jupyter"
 ENV PYSPARK_DRIVER_PYTHON_OPTS="lab"
 ENV PYSPARK_PYTHON=python3
 
-RUN pip3 install jupyterlab tensorflow keras pandas numpy matplotlib py4j && \
+RUN pip3 install jupyterlab tensorflow keras pandas numpy matplotlib py4j RISE && \
   mkdir -p /notebooks && \
   mkdir -p /root/.jupyter && touch /root/.jupyter/jupyter_notebook_config.py && \
   echo "c.NotebookApp.open_browser = False" >> /root/.jupyter/jupyter_notebook_config.py && \
@@ -169,6 +169,8 @@ ADD files/pg_hba.conf /etc/postgresql/10/main/
 
 ADD files/init.sh /
 ADD data /data
+ADD files/jupyterlab.json /usr/local/etc/jupyter/jupyter_notebook_config.d/
+COPY files/custom /root/.jupyter/custom
 
 COPY notebooks notebooks
 
