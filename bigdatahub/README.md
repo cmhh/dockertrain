@@ -26,11 +26,11 @@ $ docker build -t bigdatahub .
 To run the container:
 
 ```bash
-$ docker run -d --rm --name bigdatahub -p 8000:8000 bigdata
+$ docker run -d --rm --name bigdatahub -p 8000:8000 bigdatahub
 ```
 
 Since data is loaded to Hive on startup, it will take a minute for everything to be up and running.  Once it is, simply browse to `http://localhost:8000/bigdatatrain`.
 
-![](../doc/img/bigdatatrain00.png)
+![](../doc/img/bigdatahub00.png)
 
-![](../doc/img/bigdatatrain04.png)
+![](../doc/img/bigdatahub04.png)
