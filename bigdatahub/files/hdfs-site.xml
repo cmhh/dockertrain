@@ -1,0 +1,16 @@
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+ 
+<configuration>
+<property>
+<name>dfs.replication</name>
+<value>1</value>
+</property>
+<property>
+<name>dfs.namenode.name.dir</name>
+<value>/root/namenode</value>
+</property>
+<property>
+<name>dfs.datanode.name.dir</name>
+<value>/root/datanode</value>
+</property>
+</configuration>

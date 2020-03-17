@@ -1,0 +1,714 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+
+		<title>Building Training Environments with Docker</title>
+
+		<link rel="stylesheet" href="css/reset.css">
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/monokai.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!-- Customised styling -->
+		<link rel="stylesheet" href="css/styles.css">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section data-background="img/whale-transparent-docker.png" class="title shadow-black">
+					<h3>Building Training Environments with Docker</h3>
+					<p>
+						<small>Chris Hansen</small>
+					</p>
+				</section>
+
+				<section>
+					<section data-background="rgb(77, 126, 101)" class=title>
+						<h2>Overview</h2>
+					</section>
+					
+					<section>
+						<img src="img/docker-works-on-my-machine.jpg" style="height: 90%">
+					</section>
+
+					<section>
+						<p>Docker is a tool that enables deployment of applications in a consistent manner across multiple platforms using containers.</p>
+
+						<p>Docker containers have myriad uses, but our interest is the ability to simplify the deployment of one or more tools which would otherwise be cumbersome to work with.</p>
+					</section>
+
+					<section>
+						<p>And even if an application isn't particularly hard to install, we might simply not want to taint our OS.</p>
+						
+						<p>Or we might want to simultaneously run two otherwise incompatible applications&mdash;perhaps different versions of the same application.</p>
+
+						<p>Maybe we just want to quickly test an application, but we're likely to want to remove all trace of it immediately after.</p>
+					</section>
+
+					<section>
+						<p>Consider a 'Big Data' environment consisting of Hadoop, Hive, Apache Spark, and so on. Analysts might like to learn to use these tools, but installing and configuring them is a task not to be taken lightly.</p>
+
+						<p>But this whole environment can be 'containerised', and others can simply run those containers&mdash;all they need is the Docker engine itself.</p>
+					</section>
+
+					<section>
+						<p>This still might all be a little abstract to the uninitiated, so we consider a couple of simple, but hopefully still compelling, examples...</p>
+					</section>
+
+					<section>
+						<h3>Linux + Linux Apps</h3>
+						<p>We can effectively run an entire Linux distribution inside a container, and a number of vendors make official images.  For example, to 'pull' the latest LTS version of Ubuntu:</p>
+						<pre><code class="bash" data-trim contenteditable>
+docker pull ubuntu:18.04
+						</code></pre>
+						<p>And then we can run it interactively:</p>
+						<pre><code class="bash" data-trim contendeditable>
+docker run -it --name ubuntu --rm ubuntu:18.04 /bin/bash
+						</code></pre>
+					</section>
+
+					<section>
+						<img src=img/ubuntu.png>
+					</section>
+
+					<section>
+						<p>We can build up containers in layers, using other containers as a base.</p>
+						<p>For example, we could make a toy R container from the Ubuntu container pulled above.</p>  
+					</section>
+
+					<section>
+						<p>We first create a file called <code>Dockerfile</code> with content as follows:</p>
+						<pre><code class="dockerfile" data-trim contenteditable>
+FROM ubuntu:18.04
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update && \ 
+  apt-get install -y --no-install-recommends \
+    r-base r-base-dev r-recommended && \
+  apt-get clean 
+						</code></pre>
+					</section>
+
+					<section>
+						<p>We build the container by running:</p>
+						<pre><code class="bash" data-trim contenteditable>
+docker build -t rdemo rdemo
+						</code></pre>
+						<p>And to run the container interactively:</p>
+						<pre><code class="bash" data-trim contenteditable>
+docker run -it --name rdemo --rm rdemo R
+						</code></pre>
+					</section>
+
+					<section>
+						<img src=img/rdemo.png>
+					</section>
+
+					<section>
+						<h3>Containers for Everything</h3>
+						<p>Docker containers are becoming an increasingly standard 'installation' option for many software providers.  In some cases it is their preferred method since they then only need to maintain a single option.</p>
+
+						<p>But because of this, there are many, many official images online which we can use directly, or else as the starting point for our own creations.</p>
+					</section>
+
+					<section>
+						<p>A particularly good example, and one that's similar to the sorts of things we'll discuss here, is:</p>
+						<a href=https://jupyter-docker-stacks.readthedocs.io/en/latest/>jupyter/datascience-notebook</a>
+						<pre><code class="bash" data-trim contenteditable>
+$ docker pull jupyter/datascience-notebook
+$ docker run --rm -p 8889:8888 \
+  -e JUPYTER_ENABLE_LAB=yes \
+  -v "${HOME}/tmp":/home/jovyan/work \
+  jupyter/datascience-notebook
+						</code></pre>
+					</section>
+
+					<section>
+						<img src=img/dsnb.png>
+					</section>
+				</section>
+
+				<section>
+					<section data-background="#4287c7" class=title>
+						<h4>Example</h4>
+						<h2>Learning R</h2>
+					</section>
+
+					<section>
+						<h4><code>learnr</code></h4>
+
+						<p><code>learnr</code> is an R package that provides an R Markdown template that enables one to create interactive tutorials.</p>
+						<p>Tutorials can contain quizes, interactive code exercises, videos, and Shiny components.</p> 
+					</section>
+
+					<section>
+						<img src=img/learnr01.png>
+					</section>
+
+					<section>
+						<img src=img/learnr02.png>
+					</section>
+
+					<section>
+						<img src=img/learnr03.png>
+					</section>
+
+					<section>
+						<p>You can make a package that includes nothing but tutorials in a folder called <code>tutorials</code>, and you can then run a tutorial by calling the <code>learnr::run_tutorial</code> command.</p>
+						<p>The <code>learnr</code> package itself contains a tutorial in <code>tutorials/question_types/question_types.Rmd</code>, and we can run it via:</p>
+						<pre><code class="R" data-trim contenteditable>
+learnr::run_tutorial(name = "question_types", package = "learnr", shiny_args = list(host = "0.0.0.0", port = 3838))
+						</code></pre>
+					</section>
+
+					<section>
+						<p>Better yet, we can run this via the terminal:</p>
+						<pre><code class="bash", data-trim contenteditable>
+$ R -e "learnr::run_tutorial(name = 'question_types', package = 'learnr', shiny_args = list(host = '0.0.0.0', port = 3001)) &"
+						</code></pre>
+						<p>Why is this better?  Well, now we can run several tutorials on different ports.  And that's the bones of our R learning environment.</p>
+					</section>
+
+					<section>
+						<p>Specifically, we do the following:</p>
+						<ul>
+							<li>install R, along with any number of required packages</li>
+							<li>create a package, <code>tutR</code>, with several tutorials</li>
+							<li>start each tutorial on a different port</li>
+							<li>use a web server to proxy for each tutorial</li>
+							<li>start an instance of RStudio Server for ad hoc use</li>
+						</ul>
+						<p>And we can containerise it all!</p>
+					</section>
+
+					<section>
+						<p>There's a fair bit of detail getting this all up and running.  But that's sort of the point.  Only the people who make the container in the first place need to worry about this&ndash;everybody else can just use the result.</p>
+					</section>
+
+					<section>
+						<p style="margin-top: 0px; margin-bottom: -20px; font-size: 60%!important;"><code>Dockerfile</code></p>
+						<pre class="stretch"><code class="dockerfile" data-trim contenteditable style="font-size: 80%!important;">
+FROM ubuntu:19.04
+
+ENV DEBIAN_FRONTEND noninteractive
+
+ENV R_BASE_VERSION 3.5.2
+
+ENV LC_ALL en_US.UTF-8
+
+ENV LANG en_US.UTF-8
+
+RUN apt-get update && \ 
+  apt-get install -y --no-install-recommends \
+    libcurl4-gnutls-dev libssl-dev wget ca-certificates locales libxml2-dev \
+    nginx gdebi-core \
+    r-base=${R_BASE_VERSION}* r-base-dev=${R_BASE_VERSION}* r-recommended=${R_BASE_VERSION}* pandoc && \
+  apt-get clean && \
+  echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
+  locale-gen en_US.utf8 && \
+  /usr/sbin/update-locale LANG=en_US.UTF-8 && \
+  wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.2.1335-amd64.deb && \
+  gdebi --non-interactive rstudio-server-1.2.1335-amd64.deb && \
+  rm rstudio-server-1.2.1335-amd64.deb && \
+  adduser --disabled-password --gecos "" guest && \
+  usermod --password $(openssl passwd -1 guest) guest && \
+  printf "\noptions(repos = c(CRAN = 'https://cloud.r-project.org/'), download.file.method = 'libcurl')" >> \
+    /etc/R/Rprofile.site && \
+  printf "\nlocal({\n  options(shiny.port = 3838, shiny.host = '0.0.0.0')\n})\n" >> \
+    /etc/R/Rprofile.site && \
+  R -e "install.packages(c('tidyverse', 'data.table', 'devtools', 'shiny', 'rmarkdown'), ask = FALSE)" && \
+  R -e "devtools::install_github('https://github.com/rstudio/learnr', ask = FALSE)" 
+
+COPY tutR /tutR
+
+COPY scripts/addtutorials.sh /addtutorials.sh
+
+COPY scripts/startall.sh /startall.sh
+
+COPY conf/default /etc/nginx/sites-available/default
+
+COPY html /var/www/html
+
+RUN chmod +x /addtutorials.sh && \
+  chmod +x /startall.sh && \
+  R -e "devtools::install_local('/tutR')"  
+
+EXPOSE 8080
+
+CMD /addtutorials.sh && \
+  service nginx start && \
+  service rstudio-server start && \
+  /startall.sh && \
+  tail -F /var/log/nginx/access.log
+						</code> </pre>
+					</section>
+
+					<section>
+						<p style="margin-top: 0px; margin-bottom: -20px; font-size: 60%!important;"><code>addtutorials.sh</code></p>
+						<pre class="stretch"><code class="bash" data-trim contenteditable style="font-size: 80%!important;">
+#! /usr/bin/env bash
+
+tutr_path='/tutR/inst/tutorials'
+port=3000
+
+getTitle () { echo `cat ${tutr_path}/$1/$1.title`; }
+getDescription () { echo `cat ${tutr_path}/$1/$1.description`; }
+
+makeCard () {
+    result="\n<div class=card data-url=\"/lessons/$1\" onclick=\"window.open('/lessons/$1','mywindow');\" style=\"cursor: pointer;\">"
+    result="${result}\n  <div class=card-bg><img src=img/bg00.png></div>"      
+    result="${result}\n  <div class=card-title>`getTitle $1`</div>"   
+    result="${result}\n  <div class=card-body>`getDescription $1`</div>"   
+    result="${result}\n</div>\n"
+    echo $result
+}
+
+makeLocation () {
+    result="\nlocation /lessons/$1/ {"
+    result="${result}\n  proxy_pass http://127.0.0.1:$2/;"
+    result="${result}\n  proxy_http_version 1.1;"
+    result="${result}\n  proxy_set_header Upgrade \$http_upgrade;"
+    result="${result}\n  proxy_set_header Connection \"upgrade\";"
+    result="${result}\n  proxy_read_timeout 20d;"
+    result="${result}\n}\n"
+    echo $result
+}
+
+makeTutorial () {
+    result="R -e \"learnr::run_tutorial('$1', package = 'tutR', shiny_args = list(port = $2))\" \&\n"
+    echo $result
+}
+
+locations=""
+tutorials=""
+fundamentals=""
+tidyverse=""
+datascience=""
+spatial=""
+special=""
+
+for tut in base dataframe programming-1 programming-2
+do
+  port=$((port + 1))
+  fundamentals="${fundamentals}`makeCard ${tut}`"
+  locations="${locations}`makeLocation ${tut} ${port}`"
+  tutorials="${tutorials}`makeTutorial ${tut} ${port}`"
+done
+
+for tut in tidydata ggplot2
+do
+  port=$((port + 1))
+  tidyverse="${tidyverse}`makeCard ${tut}`"
+  locations="${locations}`makeLocation ${tut} ${port}`"
+  tutorials="${tutorials}`makeTutorial ${tut} ${port}`"
+done
+
+for tut in ml-1
+do
+  port=$((port + 1))
+  datascience="${datascience}`makeCard ${tut}`"
+  locations="${locations}`makeLocation ${tut} ${port}`"
+  tutorials="${tutorials}`makeTutorial ${tut} ${port}`"
+done
+
+for tut in spatial-1 spatial-2
+do
+  port=$((port + 1))
+  spatial="${spatial}`makeCard ${tut}`"
+  locations="${locations}`makeLocation ${tut} ${port}`"
+  tutorials="${tutorials}`makeTutorial ${tut} ${port}`"
+done
+
+for tut in datatable rcpp rjava
+do
+  port=$((port + 1))
+  special="${special}`makeCard ${tut}`"
+  locations="${locations}`makeLocation ${tut} ${port}`"
+  tutorials="${tutorials}`makeTutorial ${tut} ${port}`"
+done
+
+sed -i "s|{{ locations }}|${locations}|g" /etc/nginx/sites-available/default
+sed -i "s|{{ tutorials }}|${tutorials}|g" /startall.sh
+
+sed -i "s|{{ fundamentals }}|${fundamentals}|g" /var/www/html/index.html
+sed -i "s|{{ tidyverse }}|${tidyverse}|g" /var/www/html/index.html
+sed -i "s|{{ datascience }}|${datascience}|g" /var/www/html/index.html
+sed -i "s|{{ spatial }}|${spatial}|g" /var/www/html/index.html
+sed -i "s|{{ special }}|${special}|g" /var/www/html/index.html
+						</code> </pre>
+					</section>
+
+					<section>
+						<p>Again, there's a fair bit going on here, which nobody really needs to know much about.  We just pull the container from a registry, or build it via:</p>
+						<pre><code class="bash" data-trim contenteditable>
+$ docker build -t tutr tutR
+						</code></pre>
+						<p>and we start things running via:</p>
+						<pre><code class="bash" data-trim contenteditable>
+$ docker run -d --rm --name tutr -p 8080:8080 tutr
+						</code></pre>
+						<p>Then we just browse to <code>http://localhost:8080</code>...</p>
+					</section>
+
+					<section>
+						<img src=img/tutr01.png>
+					</section>
+
+					<section>
+						<img src=img/tutr02.png>
+					</section>
+
+					<section>
+						<img src=img/tutr03.png>
+					</section>
+
+					<section>
+						<img src=img/tutr04.png>
+					</section>
+
+					<section>
+						<p>Note that the package containing the <code>learnr</code> tutorials is just a package and can be managed just like any other package.</p>
+						<p>Any number of people could contribute tutorials to the package, and we'd simply re-build the Docker image to reflect the new content.</p>
+						<p>Cool.</p>
+					</section>
+				</section>
+
+				<section>
+					<section data-background="rgb(226, 90, 32)" class=title>
+						<h4>Example</h4>
+						<h2>Learning Apache Spark, etc.</h2>
+					</section>
+
+					<section>
+						<p>Imagine you work in a place that is building a shiny new data lake.  The data lake is a cluster containing Hadoop, Hive, and Apache Spark.</p>
+						<p>You want to take advantage of all this new stuff, but you only know SAS and R.</p>
+						<p>You decide you need to upskill.  But there's no training environment readily available.  No problem, you'll just install everything you need yourself...</p>
+					</section>
+
+					<section>
+						<img src=img/SystemIllustration.jpg>
+					</section>
+
+					<section>
+						<img src="img/liz_what_the_what.gif" height=500>
+					</section>
+
+					<section>
+						<p>We can dockerise that no problem...</p>
+					</section>
+
+					<section>
+						<img src="img/liz_thumbs_up.gif" height=500>
+					</section>
+
+					<section>
+						<p style="margin-top: 0px; margin-bottom: -20px; font-size: 60%!important;"><code>Dockerfile</code></p>
+						<pre class="stretch"><code class="dockerfile" data-trim contenteditable style="font-size: 80%!important;">
+FROM ubuntu:18.04
+
+ENV DEBIAN_FRONTEND noninteractive
+ENV R_BASE_VERSION 3.4.4
+ENV SBT_VERSION 1.2.8
+ENV HADOOP_VERSION 3.2.0
+ENV HIVE_VERSION 2.3.5
+ENV SPARK_VERSION 2.4.3
+ENV PATH $PATH:~/.local/bin
+ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
+ENV SHELL /bin/bash
+
+# install necessary packages
+RUN apt-get update && \
+  apt-get install -y \
+    libssl-dev libgit2-dev libssl-dev libcurl4-gnutls-dev libxml2-dev curl\
+    openssh-server openssh-client \
+    openjdk-8-jdk python3-pip git vim postgresql libpostgresql-jdbc-java \
+    r-base=${R_BASE_VERSION}* r-base-dev=${R_BASE_VERSION}* && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /root/.ssh && \
+  ssh-keygen -t rsa -f /root/.ssh/id_rsa -P '' && \
+  cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
+
+# install sbt
+RUN curl -Lo /tmp/sbt.tgz https://piccolo.link/sbt-${SBT_VERSION}.tgz && \
+  tar -xvf /tmp/sbt.tgz -C /opt && \
+  rm -f /tmp/sbt.tgz
+ENV SBT_HOME /opt/sbt
+ENV PATH $PATH:$SBT_HOME/bin
+
+# install Hadoop
+ENV HADOOP_HOME /opt/hadoop
+ENV HADOOP_CONF_DIR=$HADOOP_HOME/conf
+ENV PATH $PATH:$HADOOP_HOME/bin
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HADOOP_HOME/lib/native
+RUN mkdir -p $HADOOP_HOME && \
+  curl -sL \
+    "https://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz" | \
+    gunzip | tar -x --strip-components=1 -C $HADOOP_HOME/ && \
+  rm -rf $HADOOP_HOME/share/doc && \
+  chown -R root:root $HADOOP_HOME && \
+  mkdir -p $HADOOP_HOME/logs && \
+  ln -s $HADOOP_HOME/etc/hadoop $HADOOP_CONF_DIR && \
+  chmod 777 $HADOOP_HOME/logs 
+
+# install Hive
+ENV HIVE_HOME=/opt/hive
+ENV HIVE_CONF_DIR=$HIVE_HOME/conf
+ENV PATH $PATH:$HIVE_HOME/bin
+ENV HDFS_NAMENODE_USER root
+ENV HDFS_DATANODE_USER root
+ENV HDFS_SECONDARYNAMENODE_USER root
+ENV YARN_NODEMANAGER_USER root
+ENV YARN_RESOURCEMANAGER_USER root
+RUN mkdir -p $HIVE_HOME && \
+  curl -sL \
+    "https://archive.apache.org/dist/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz" | \
+    gunzip | tar -x --strip-components=1 -C $HIVE_HOME/ && \
+  chown -R root:root $HIVE_HOME/ && \
+  mkdir -p $HIVE_HOME/hcatalog/var/log && \
+  mkdir -p $HIVE_HOME/var/log && \
+  mkdir -p /data/hive/ && \
+  mkdir -p $HIVE_CONF_DIR && \
+  chmod 777 $HIVE_HOME/hcatalog/var/log && \
+  chmod 777 $HIVE_HOME/var/log && \
+  mkdir ${HOME}/namenode && mkdir ${HOME}/datanode
+
+# install spark
+ENV SPARK_HOME=/opt/spark
+ENV SPARK_CONF_DIR=$SPARK_HOME/conf
+ENV PATH $PATH:$SPARK_HOME/bin
+RUN mkdir -p $SPARK_HOME && \
+  curl -sL \
+    "https://archive.apache.org/dist/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop2.7.tgz" | \
+    gunzip | tar -x --strip-components=1 -C $SPARK_HOME/ && \
+  chown -R root:root $SPARK_HOME && \
+  mkdir -p $SPARK_HOME/logs && \
+  mkdir -p $SPARK_HOME/work && \
+  mkdir -p $SPARK_CONF_DIR && \
+  chmod 777 $SPARK_HOME/logs && \
+  chmod 777 $SPARK_HOME/work && \
+  chmod 777 $SPARK_CONF_DIR
+
+# configure R
+RUN R CMD javareconf && \
+  echo 'options(repos = c(CRAN = "https://cloud.r-project.org/"), download.file.method = "libcurl")' >> /etc/R/Rprofile.site && \
+  R -e "install.packages(c('rJava', 'RJDBC', 'devtools', 'sparklyr', 'ggplot2', 'dplyr', 'data.table'))" && \
+	rm -rf /tmp/downloaded_packages/ /tmp/*.rds 
+
+# install Jupyter w/ pyspark
+ENV PYTHONPATH=$SPARK_HOME/python:$PYTHONPATH
+ENV PYSPARK_DRIVER_PYTHON="jupyter"
+ENV PYSPARK_DRIVER_PYTHON_OPTS="lab"
+ENV PYSPARK_PYTHON=python3
+
+RUN pip3 install jupyterlab tensorflow keras pandas numpy matplotlib py4j && \
+  mkdir -p /notebooks && \
+  mkdir -p /root/.jupyter && touch /root/.jupyter/jupyter_notebook_config.py && \
+  echo "c.NotebookApp.open_browser = False" >> /root/.jupyter/jupyter_notebook_config.py && \
+  echo "c.NotebookApp.ip = '0.0.0.0'" >> /root/.jupyter/jupyter_notebook_config.py && \
+  echo "c.NotebookApp.password = u''" >> /root/.jupyter/jupyter_notebook_config.py && \
+  echo "c.NotebookApp.token = ''" >> /root/.jupyter/jupyter_notebook_config.py && \
+  R -e "devtools::install_github('IRkernel/IRkernel')" && \
+  R -e "IRkernel::installspec()" && \
+  R -e "devtools::install_github('apache/spark@v${SPARK_VERSION}', subdir='R/pkg')" && \
+	rm -rf /tmp/downloaded_packages/ /tmp/*.rds 
+
+# install almond kernel
+RUN curl -Lo coursier https://git.io/coursier-cli && \
+  chmod +x coursier && \
+  SCALA_VERSION=2.11.12 ALMOND_VERSION=0.6.0 && \
+  ./coursier bootstrap \
+    -r jitpack \
+    -i user -I user:sh.almond:scala-kernel-api_$SCALA_VERSION:$ALMOND_VERSION \
+    sh.almond:scala-kernel_$SCALA_VERSION:$ALMOND_VERSION \
+    --sources --default=true \
+    -o almond-scala-2.11 && \
+  ./almond-scala-2.11 --install --id scala211 --display-name "Scala (2.11)" && \
+  rm -f almond-scala-2.11  && \
+  SCALA_VERSION=2.12.8 && \
+  ./coursier bootstrap \
+    -r jitpack \
+    -i user -I user:sh.almond:scala-kernel-api_$SCALA_VERSION:$ALMOND_VERSION \
+    sh.almond:scala-kernel_$SCALA_VERSION:$ALMOND_VERSION \
+    --sources --default=true \
+    -o almond-scala-2.12 && \
+  ./almond-scala-2.12 --install --id scala212 --display-name "Scala (2.12)" && \
+  rm -f almond-scala-2.12 && \
+  SCALA_VERSION=2.13.0 && \
+  ./coursier bootstrap \
+    -r jitpack \
+    -i user -I user:sh.almond:scala-kernel-api_$SCALA_VERSION:$ALMOND_VERSION \
+    sh.almond:scala-kernel_$SCALA_VERSION:$ALMOND_VERSION \
+    --sources --default=true \
+    -o almond-scala-2.13 && \
+  ./almond-scala-2.13 --install --id scala213 --display-name "Scala (2.13)" && \
+  rm -f almond-scala-2.13 && \
+  rm -f coursier 
+
+# other configuration
+RUN cd $HIVE_HOME/lib && \
+  ln -s $SPARK_HOME/jars/scala-library* && \
+  ln -s $SPARK_HOME/jars/spark-core* && \
+  ln -s $SPARK_HOME/jars/spark-network-common* && \
+  ln -s $SPARK_HOME/jars/chill-* && \
+  ln -s $SPARK_HOME/jars/chill_* && \
+  ln -s $SPARK_HOME/jars/jackson-module-paranamer* && \
+  ln -s $SPARK_HOME/jars/jackson-module-scala* && \
+  ln -s $SPARK_HOME/jars/jersey-container-servlet-core* && \
+  ln -s $SPARK_HOME/jars/jersey-server* && \  
+  ln -s $SPARK_HOME/jars/json4s-ast* && \
+  ln -s $SPARK_HOME/jars/kryo-shaded* && \
+  ln -s $SPARK_HOME/jars/minlog* && \
+  ln -s $SPARK_HOME/jars/scala-xml* && \
+  ln -s $SPARK_HOME/jars/spark-launcher* && \
+  ln -s $SPARK_HOME/jars/spark-network-shuffle* && \
+  ln -s $SPARK_HOME/jars/spark-unsafe* && \
+  ln -s $SPARK_HOME/jars/xbean-asm5-shaded* 
+
+ADD files/core-site.xml $HADOOP_CONF_DIR/
+ADD files/hadoop-env.sh $HADOOP_CONF_DIR/
+ADD files/hdfs-site.xml $HADOOP_CONF_DIR/
+ADD files/hive-site.xml $HIVE_CONF_DIR/
+ADD files/hive-site.xml $SPARK_CONF_DIR/
+ADD files/pg_hba.conf /etc/postgresql/10/main/
+
+ADD files/init.sh /
+ADD data /data
+
+COPY notebooks/scala notebooks/scala
+COPY notebooks/python notebooks/python
+COPY notebooks/R notebooks/R
+
+EXPOSE 22 
+EXPOSE 4040
+EXPOSE 8080
+EXPOSE 8081
+EXPOSE 8888
+EXPOSE 9083
+EXPOSE 10000
+
+ENTRYPOINT ["/init.sh"]
+
+						</code></pre>
+					</section>
+
+					<section>
+						<p>We build as before:</p>
+						<pre><code class="bash" data-trim contenteditable>
+$ docker build -t bigdata bigdata
+						</code></pre>
+						<p>and run as follows:</p>
+						<pre><code class="bash" data-trim contenteditable>
+$ docker run -d --rm --name bigdata -p 8888:8888 bigdata
+						</code></pre>
+						<p>We then just browse to <code>http://localhost:8888</code>...</p>
+					</section>
+
+					<section>
+						<img src=img/bigdata01.png>
+					</section>
+
+					<section>
+						<img src=img/bigdata02.png>
+					</section>
+				</section>
+
+				<section>
+					<section data-background="#800080" class=title>
+						<h2>Some Practicalities</h2>
+					</section>
+
+					<section>
+						<p>The main selling point of containerisation here is to bundle everything needed for a particular application together in a single container (or set of containers in the case of <code>docker-compose</code>).</p>
+
+						<p>But getting Docker itself can be hard, as can building and running containers.  We really want this to be as pain free as possible, so...</p>
+					</section>
+
+					<section>
+						<h4>Getting Docker</h4>
+
+						<p>In the case of an enterprise environment, where devices are provided, the obvious thing to do is to simply deploy it in the same way as any other enterprise offering.</p>
+						<p>On Windows, Docker is available with support for Linux containers for Windows 10 Pro or Windows Server 2016 onwards.  So, Docker could be made readily available on, say, a Surface Pro, or even inside a VM.</p>
+					</section>
+
+					<section>
+						<p>But to the extent a container is independent, users may want to upskill in their own time, on their own devices.</p>
+						<p>Of course users will then need to install the Docker engine for themselves... no getting around this.</p>
+						<p>Get Docker CE for <a href=https://docs.docker.com/install/linux/docker-ce/ubuntu/>Ubuntu</a>|<a href=https://docs.docker.com/install/linux/docker-ce/fedora/>Fedora</a><br>
+						   <a href=https://docs.docker.com/docker-for-windows/install/>Install Docker Desktop for Windows</a><br>
+						   <a href=https://docs.docker.com/docker-for-mac/install/>Install Docker Desktop for Mac</a></p>
+					</section>
+
+					<section>
+						<h4>Git[Hub / Lab / ...]</h4>
+
+						<p>We can open source everything demonstrated here.  In fact, I've done just that:</p>
+						<p><a href="https://github.com/cmhh/dockertrain">build training environments with Docker</a></p>
+						<p>To pull the whole repository, then build and run the R training prototype:</p>
+						<pre><code class="bash" data-trim contenteditable>
+$ git clone dockertrain && cd dockertrain
+$ docker build -t tutr R # this will take a while!
+$ docker run -d --rm --name tutr -p 8080:8080 tutr
+						</code></pre>
+					</section>
+
+					<section>
+						<h4>Docker Registry</h4>
+						<p>When you run <code>docker pull</code> you are pulling images from a remote registry&ndash;usually dockerhub.</p>
+						<p>It is possible to create a private registry, and there are any number of guides online.  For example:</p>
+						<p><a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-a-private-docker-registry-on-ubuntu-18-04">How To Set Up a Private Docker Registry on Ubuntu 18.04</a></p>
+						<p>Learning environments like the ones discussed here can be placed in a private registry, so users can pull images without the need to build them themselves.</p>
+					</section>
+				</section>
+				<section>
+					<section data-background="#F1C40F" class=title>
+						<h2>Other Rescources</h2>
+					</section>
+
+					<section>
+						<p>There are many, many online tutorials, books, etc. about Docker.  The <a href=https://docs.docker.com/>official docs</a> are excellent.</p>
+						<p>For analysts and data scientists, the following is a worthwhile read:</p>
+						<img src=img/d4ds.jpg>
+						<p  style="text-align: center; font-size: 50%;"><a href=https://www.apress.com/gp/book/9781484230114>Docker for Data Science (2017)</a></p>
+					</section>
+				</section>
+			</div>
+		</div>
+
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true }
+				],
+				center: false,
+				controls: true,
+				hash: true,
+				progress: true,
+				trainsition: 'slide',
+				backgroundTransition: 'zoom'
+			});
+		</script>
+	</body>
+</html>
