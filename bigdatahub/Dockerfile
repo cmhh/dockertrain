@@ -179,18 +179,23 @@ COPY notebooks notebooks
 RUN useradd -ms /bin/bash guest1 && \
   echo 'guest1:guest1' | chpasswd && \
   cp -R /notebooks /home/guest1 && \
+  chown -R guest1 /home/guest1/notebooks && chgrp -R guest1 /home/guest1/notebooks && \
   useradd -ms /bin/bash guest2 && \
   echo 'guest2:guest2' | chpasswd && \
   cp -R /notebooks /home/guest2 && \
+  chown -R guest2 /home/guest2/notebooks && chgrp -R guest2 /home/guest2/notebooks && \
   useradd -ms /bin/bash guest3 && \
   echo 'guest3:guest3' | chpasswd && \
   cp -R /notebooks /home/guest3 && \
+  chown -R guest3 /home/guest3/notebooks && chgrp -R guest3 /home/guest3/notebooks && \
   useradd -ms /bin/bash guest4 && \
   echo 'guest4:guest4' | chpasswd && \
   cp -R /notebooks /home/guest4 && \
+  chown -R guest4 /home/guest4/notebooks && chgrp -R guest4 /home/guest4/notebooks && \
   useradd -ms /bin/bash guest5 && \
   echo 'guest5:guest5' | chpasswd && \
-  cp -R /notebooks /home/guest5 
+  cp -R /notebooks /home/guest5 && \
+  chown -R guest5 /home/guest5/notebooks && chgrp -R guest5 /home/guest5/notebooks 
 
 EXPOSE 22 
 EXPOSE 4040
