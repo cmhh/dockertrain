@@ -8,6 +8,7 @@ This repository contains everything needed to build a single Docker container co
 * sbt
 * R
 * Python 3
+* JupyterHub
 * JupyterLab with R, Python, and Scala kernels
 * Jupyter notebooks covering a range of topics
 * bundled data, including pre-populated Hive tables, CSV files, parquet files, and so on.
@@ -19,17 +20,17 @@ The intention is to gradually add to the notebooks over time, and have these the
 Build the container as follows:
 
 ```bash
-$ docker build -t bigdata .
+$ docker build -t bigdatahub .
 ```
 
 To run the container:
 
 ```bash
-$ docker run -d --rm --name bigdata -p 8888:8888 bigdata
+$ docker run -d --rm --name bigdatahub -p 8000:8000 bigdata
 ```
 
-Since data is loaded to Hive on startup, it will take a minute for everything to be up and running.  Once it is, simply browse to `http://localhost:8888`.
+Since data is loaded to Hive on startup, it will take a minute for everything to be up and running.  Once it is, simply browse to `http://localhost:8000/bigdatatrain`.
 
-![](../doc/img/bigdata01.png)
+![](../doc/img/bigdatatrain00.png)
 
-![](../doc/img/bigdata02.png)
+![](../doc/img/bigdatatrain04.png)
