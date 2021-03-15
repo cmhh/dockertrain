@@ -102,8 +102,10 @@ RUN wget https://nodejs.org/dist/v12.16.0/node-v12.16.0-linux-x64.tar.xz && \
   mkdir -p /usr/local/node && tar -xJf node-v12.16.0-linux-x64.tar.xz -C /usr/local/node --strip-components=1 && \
   rm node-v12.16.0-linux-x64.tar.xz && \
   npm install -g configurable-http-proxy && \
+  pip3 install --upgrade pip && \
   pip3 install jupyterhub jupyterlab tensorflow keras pandas numpy matplotlib py4j RISE && \
   mkdir -p /notebooks && \
+  R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/pbdZMQ/pbdZMQ_0.3-3.tar.gz', repos = NULL, type = 'source')" && \
   R -e "devtools::install_github('IRkernel/IRkernel')" && \
   R -e "IRkernel::installspec(prefix = '/usr/local')" && \
   R -e "devtools::install_github('apache/spark@v${SPARK_VERSION}', subdir='R/pkg')" && \
